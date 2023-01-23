@@ -1,6 +1,7 @@
 ﻿using LaMiaPizzeriaEF.Database;
 using LaMiaPizzeriaEF.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System.Text.Json;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -16,7 +17,9 @@ namespace LaMiaPizzeriaEF.Controllers {
             var pizzas = db.Pizzas.Include(p => p.Tags)
                                   .Include(p => p.Category);
 
-            var json = JsonSerializer.Serialize(pizzas);
+            var json = JsonConvert.SerializeObject(pizzas, new JsonSerializerSettings() {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
             return Ok(json);
         }
     }
