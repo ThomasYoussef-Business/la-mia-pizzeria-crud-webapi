@@ -8,17 +8,7 @@ namespace LaMiaPizzeriaEF.Controllers {
         // MAIN PAGE
         [Route("/pizze")]
         public IActionResult Index() {
-            using var db = new PizzasDbContext();
-            List<Pizza> pizzas = db.Pizzas.ToList();
-
-            foreach (Pizza pizza in pizzas) {
-
-                db.Entry(pizza)
-                  .Reference(p => p.Category)
-                  .Load();
-            }
-
-            return View(pizzas);
+            return View();
         }
 
         [Route("pizze/{id}")]

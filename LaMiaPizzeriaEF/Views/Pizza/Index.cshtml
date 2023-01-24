@@ -1,61 +1,88 @@
-﻿@model List<Pizza>
-@{
+﻿@{
     Layout = "_Header";
-
-    async Task PizzaCard(Pizza pizza) {
-        <div class="col-lg-4 col-sm-6 col-12 d-flex justify-content-center">
-            <div class="card" style="width: 18rem;">
-                <div class="ratio ratio-4x3">
-                    <img src="@pizza.PictureUrl" class="card-img-top" alt="...">
-                </div>
-                <div class="card-body d-flex flex-column align-items-center justify-content-start">
-                    <h5 class="card-title">@pizza.Name</h5>
-                    <p class="card-text">@pizza.Description</p>
-                    @if (pizza.Category is not null) {
-                        <p class="card-text">Categoria: @pizza.Category</p>
-                    }
-                    <div class="d-flex mt-auto">
-                        <a href="@Url.Action("Pizza", "Pizza", new {id=pizza.Id})" class="btn m-1 mx-2 btn-primary">
-                            <span class="material-symbols-outlined m-0">
-                                info
-                            </span>
-                        </a>
-                        <a href="@Url.Action("Edit", "Pizza", new {id=pizza.Id})" class="btn m-1 mx-2 btn-warning">
-                            <span class="material-symbols-outlined m-0">
-                                edit
-                            </span>
-                        </a>
-                        <form asp-action="Delete" asp-controller="Pizza" asp-route-id="@pizza.Id" method="post" class="d-inline-block m-1 mx-2">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-danger">
-                                <span class="material-symbols-outlined m-0">
-                                    delete_forever
-                                </span>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
 }
 
 <div class="container-fluid mt-5">
-    <div class="row g-5 align-content-between">
-        @if (Model == null || !Model.Any()) {
-            <div class="col-lg-4 col-12 d-flex justify-content-center">
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">Non ci sono pizze nell'applicazione :(</h5>
-                        <p class="card-text">Chiedo scusa!</p>
-                    </div>
+    <div id="pizzasContainer" class="row g-5 align-content-between w-100">
+        <div id="pizzasLoadingSpinner" class="col-12 d-flex justify-content-center my-5 p-0">
+            <div class="spinner-border text-primary my-5" role="status" style="width: 5rem; height: 5rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div id="pizzasDontExist" class="col-lg-4 col-12 d-flex justify-content-center d-none">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Non ci sono pizze nell'applicazione :(</h5>
+                    <p class="card-text">Chiedo scusa!</p>
                 </div>
             </div>
-        }
-        else {
-            foreach (var pizza in Model) {
-                await PizzaCard(pizza);
-            }
-        }
+        </div>
+
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript">
+        function PizzaCard(data) {
+            return `
+                    <div class="col-lg-4 col-sm-6 col-12 d-flex justify-content-center">
+                        <div class="card" style="width: 18rem;">
+
+                            <div class="ratio ratio-4x3">
+                                <img src="${data.PictureUrl}" class="card-img-top" alt="...">
+                            </div>
+
+                            <div class="card-body d-flex flex-column align-items-center justify-content-start">
+                                <h5 class="card-title">${data.Name}</h5>
+                                <p class="card-text">${data.Description}</p>
+                                <p class="card-text">Categoria: ${data.Category.Name}</p>
+
+                                <div class="d-flex mt-auto">
+                                    <a href="https://localhost:7190/pizze/${data.Id}" class="btn m-1 mx-2 btn-primary">
+                                        <span class="material-symbols-outlined m-0">
+                                            info
+                                        </span>
+                                    </a>
+                                    <a href="https://localhost:7190/pizza/Edit/${data.Id}" class="btn m-1 mx-2 btn-warning">
+                                        <span class="material-symbols-outlined m-0">
+                                            edit
+                                        </span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+        }
+
+        let pizzasContainer = document.getElementById("pizzasContainer");
+        let pizzasDontExist = document.getElementById("pizzasDontExist");
+        let pizzasLoadingSpinner = document.getElementById("pizzasLoadingSpinner");
+
+        function UpdatePizzas(query) {
+            pizzasLoadingSpinner.classList.add("d-flex");
+            pizzasLoadingSpinner.classList.remove("d-none");
+
+            axios.get('https://localhost:7190/api/pizzas')
+                .then(function (response) {
+                    let pizzasData = response.data;
+                    if (Object.keys(pizzasData).length < 1) {
+                        document.getElementById("pizzasDontExist").classList.remove("d-none");
+                    } else {
+                        pizzasData.forEach(function (pizzaData) {
+                            pizzasContainer.innerHTML += PizzaCard(pizzaData);
+                        });
+                    }
+                    document.getElementById("pizzasLoadingSpinner").classList.remove("d-flex");
+                    document.getElementById("pizzasLoadingSpinner").classList.add("d-none");
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+
+        UpdatePizzas();
+
+    </script>
+}
