@@ -13,15 +13,7 @@ namespace LaMiaPizzeriaEF.Controllers {
 
         [Route("pizze/{id}")]
         public IActionResult Pizza(int id) {
-            using var db = new PizzasDbContext();
-            Pizza? pizza = db.Pizzas.Find(id);
-            db.Entry(pizza)
-              .Reference(p => p.Category)
-              .Load();
-            db.Entry(pizza)
-              .Collection(p => p.Tags)
-              .Load();
-            return View(pizza);
+            return View();
         }
 
         // ADD A NEW PIZZA
