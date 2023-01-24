@@ -62,6 +62,13 @@ namespace LaMiaPizzeriaEF.Models {
         public bool HasTag(Tag tag) {
             return Tags.Contains(tag);
         }
+
+        public bool ContainsText(string text) {
+            text = text.Trim()
+                       .ToLower();
+
+            return Name.ToLower().Contains(text) || Description.ToLower().Contains(text);
+        }
         #endregion
     }
 }
